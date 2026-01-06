@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>7 Hidden Messages</title>
+    <link rel="icon" href="data:," />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        font-family: Arial, sans-serif;
+        /* Background gradient */
+        background: linear-gradient(135deg, #43cea2, #185a9d);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        overflow: hidden;
+      }
+
+      #page {
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+
+      /* Shared message style */
+      .message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 0.6s ease;
+        text-align: center;
+        font-size: 25px;
+        pointer-events: none;
+        max-width: 80%;
+        z-index: 10;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Zones */
+      #hover-zone {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 30%;
+        z-index: 5;
+      }
+
+      #click-zone {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 30%;
+        height: 30%;
+        z-index: 5;
+      }
+
+      #corner-zone {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 80px;
+        height: 80px;
+        z-index: 5;
+      }
+
+      /* --- RAIN EFFECT CSS --- */
+      .falling-emoji {
+        position: fixed;
+        top: -50px;
+        user-select: none;
+        pointer-events: none;
+        z-index: 9999;
+        font-size: 30px;
+        animation-name: fall;
+        animation-timing-function: linear;
+        animation-fill-mode: forwards;
+      }
+
+      /* --- HINT SYSTEM --- */
+      #hint-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+      }
+
+      .hint-icon {
+        font-size: 30px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.3s;
+        background: rgba(255, 255, 255, 0.2);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(5px);
+        user-select: none;
+        flex-shrink: 0;
+      }
+
+      .hint-icon:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      .hint-list {
+        display: none;
+        margin-top: 10px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        list-style: none;
+        width: 220px;
+        text-align: left;
+        backdrop-filter: blur(5px);
+        font-size: 14px;
+        line-height: 1.6;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      #hint-container:hover .hint-list {
+        display: block;
+        animation: fadeIn 0.5s;
+      }
+      /* Final hidden message – pure glass (no dark background) */
+      #flag-message {
+        width: 85vw;
+        max-width: 900px;
+        max-height: 75vh;
+
+        padding: 30px 40px;
+        font-size: 18px;
+        line-height: 1.8;
+
+        text-align: left;
+        white-space: pre-wrap;
+
+        overflow-y: auto;
+        pointer-events: auto;
+
+        /* PURE transparency */
+        background: rgba(255, 255, 255, 0.08);
+
+        /* Glass blur */
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+
+        border-radius: 16px;
+
+        /* Soft scroll hint fade */
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 10%,
+          black 90%,
+          transparent
+        );
+
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 10%,
+          black 90%,
+          transparent
+        );
+      }
+
+      #flag-message::-webkit-scrollbar {
+        width: 5px;
+      }
+
+      #flag-message::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      #flag-message::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.25);
+        border-radius: 10px;
+      }
+
+      #flag-message::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fall {
+        to {
+          transform: translateY(110vh) rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <audio id="bg-music" loop>
+      <source src="./song.mp3" type="audio/mpeg" />
+    </audio>
+
+    <div id="page">
+      <div id="hover-zone"></div>
+      <div id="hover-message" class="message">
+        Great hovering Love 💘,<br />
+        <br />
+        YES, I finally know how to pronounce 'Espresso' correctly! ☕<br /><br />
+        you are curious, huh? 🫣 (You can check the other
+        <b><i>corners</i></b> too!)
+      </div>
+
+      <div id="click-zone"></div>
+      <div id="click-message" class="message">
+        OMG, you clicked?! 😱 <br /><br />
+        You must be really curious Honey! 🐝 <br /><br />
+        Thanks for telling me that waxing and shaving are different things. <br>
+        (I already knew it, by the way)😜
+      </div>
+
+      <div id="corner-zone"></div>
+      <div id="corner-message" class="message">
+        Bottom-left? You *really* explore things. I LOVEEE that about you.😜<br />
+        <br />
+        "Maza kade ahe hotstar ch, Tya vr special oops ahe, Ani 'mi' pn, <br>
+        Mi = mission impossible" (31 july 2025) <br />
+        My heart was so full—I can't even describe how happy I was. <br /><br />
+        (You can also try SE 🧭)
+      </div>
+
+      <div id="key-message" class="message">
+        NO WAY! You found the secret key combo! 🎉 <br />
+        You are AMAZING! <br /><br />
+        remember this "akhsuna", Believe me it'll help you later.
+      </div>
+
+      <div id="double-message" class="message">
+        DOUBLE CLICKER! 😍 Okay, that made me smile. <br />
+        You really love surprises, don't you? <br /><br />
+        I wrote four blogs, and you were present in every one—because you mean
+        that much to me. ✍🏽
+      </div>
+
+      <div id="hold-message" class="message">
+        WOW, you held down the mouse! 🙌 Held me too, like this deer.<br />
+        <br />
+
+        Even though it was unintentionally but... At a time when I had given up
+        on love, you gently brought it back to me. <br />
+      </div>
+
+      <div id="idle-message" class="message">
+        Thinking? You've stayed long enough to become something I enjoy…
+        <hr />
+        I like having you here.
+      </div>
+
+      <div id="focus-message" class="message">
+        You came back 💕 I really missed you soo much <i>SAKHI!</i> 🥹
+      </div>
+      <div id="flag-message" class="message">
+        रात्रीचा 1 वाजलाय आणि हे मी आत्ता लिहितोय कारण दिवसभर मन होत नव्हतं. लिहायला बसलो पण शब्द फुटत नव्हते, आत्ताही नीट फुटत नाहीयेत, पण तरीही...
+        यात काय लिहू कळत नाहीये, पण लिहावंसं वाटतंय....
+        तुला हा मेसेज दिसतोय म्हणजे तू बाकीचे 6 hidden message शोधलेस.... Good I,m sooo proud of you!
+        Thank you so much प्रेम काय असतं ते समजावून सांगण्यासाठी
+        Thank you so much कळत-नकळत माझी काळजी करण्यासाठी... 
+        Thank you so much “तुझ्या घरातली संगमरवरी कृष्णाची मूर्ती मीच देणार” हे बोलण्यासाठी 
+        Thank you so much माझ्यासाठी केरळवरून माझा कृष्ण आणण्यासाठी 
+        Thank you so much त्या चॉकलेट्ससाठी 
+        Thank you so much त्या काही movies आणि songs साठी जे तुझ्यामुळे मी पाहू शकलो, ऐकू शकलो 
+        Thank you so much माझ्यावर trust ठेवण्यासाठी 
+        Thank you so much मला तुझा <b>'Best Briend'</b> बोलण्यासाठी 
+        Thank you so much मला तुझ्या जवळ येऊ देण्यासाठी 
+        Thank you so much मला तुझ्या कामी येऊ देण्यासाठी 
+        Thank you so much त्या सगळ्या secret साठी जे बाकी कुणालाच नाहीत पण मला माहिती आहेत!
+        Thank you so much तुझ्या त्या पाणीदार आणि टपोऱ्या डोळ्यांत मनसोक्त पाहू देण्यासाठी
+        Thank you so much तुझा हात माझ्या हातात देण्यासाठी 
+        आपण परत कधी बोलू का नाही, भेटू का नाही, परत एकदा त्या
+        लायब्ररीमध्ये बसून सोबत रडू आणि नंतर हसू का नाही, तू परत माझ्यावर खोटं
+        चिडशील आणि मी पण खोटं घाबरेन का नाही, परत तिथे बसून तुला नकळत पाहत बसेन
+        का नाही, आणि तुला कळलं तर घाबरून माझी नजर खाली घेईन का नाही यातलं मला
+        काही काहीच माहीत नाही....
+        फक्त एक गोष्ट माहितीये आणि तीच लक्षात ठेव.. मी तुझ्यावर प्रेम केलं होतं, आणि मी तुझ्यावर प्रेम करतोय...
+        कधी कधी प्रेम व्हायला काही seconds पण पुरेसे आहेत माहितीये?
+        लिहिता लिहिता डोळ्यांत पाणी आलं बघ 😂...(🥹) 
+        आणि हो, अजूनही ती कॉफीची डबी आहे माझ्याकडे जपून, लपवून ठेवलेली, ज्यात तू मला चॉकलेट्स दिलेले... 
+       <b> खूप मोठी हो, समाधानी हो, अशी आशा आणि आपल्या कृष्ण चरणी प्रार्थना.</b> 
+        <b><i>THANK YOU SO MUCH </i></b> काही दिवस का होईना तुझ्या आयुष्यात येऊ देण्यासाठी आणि माझ्या आयुष्यात येण्यासाठी akhsunA....
+      </div>
+    </div>
+
+    <div id="hint-container">
+      <div class="hint-icon">💡</div>
+      <ul class="hint-list">
+        <li>⌨️ Fill in the blanks (type directly on Keyboard) <br> "Krishna .... Radha!" (4 letters one word)</li>
+        <li>✨ <b>Move</b> your mouse gently...</li>
+        <li>👆 <b>Click</b> somewhere...</li>
+        <li>✌️ <b>Double Click</b> too!</li>
+        <li>⏳ <b>Click</b> and hold...</li>
+        <li>⌨️ Enter 'A' without using CapsLK (Press 2 keys for it...)</li>
+        <li>👨‍💻 Sometimes its good to check <b>console</b>...</li>
+      </ul>
+    </div>
+
+    <script>
+      /* ============================================
+         GLOBAL STATE (The "Lock")
+         ============================================ */
+      let isFlagActive = false; // When true, no other message can appear
+
+      /* ============================================
+         🎵 MUSIC AUTO-PLAY SCRIPT 
+         ============================================ */
+      const audio = document.getElementById("bg-music");
+      audio.volume = 0.5;
+
+      function startMusic() {
+        audio
+          .play()
+          .then(() => {
+            document.removeEventListener("click", startMusic);
+            document.removeEventListener("keydown", startMusic);
+            document.removeEventListener("mousemove", startMusic);
+          })
+          .catch((error) => {
+            // Waiting for interaction
+          });
+      }
+      startMusic();
+      document.addEventListener("click", startMusic);
+      document.addEventListener("keydown", startMusic);
+      document.addEventListener("mousemove", startMusic);
+
+      /* ============================================
+         MESSAGE LOGIC
+         ============================================ */
+      const messages = document.querySelectorAll(".message");
+
+      /* Utility: hide all messages */
+      function hideAll() {
+        // If the special 4-minute message is active, DO NOT hide it.
+        if (isFlagActive) return;
+
+        messages.forEach((m) => {
+          m.style.opacity = 0;
+        });
+      }
+
+      /* Hover */
+      const hoverZone = document.getElementById("hover-zone");
+      const hoverMessage = document.getElementById("hover-message");
+      hoverZone.addEventListener("mouseenter", () => {
+        if (isFlagActive) return; // Block interaction if flag is active
+        hideAll();
+        hoverMessage.style.opacity = 1;
+      });
+      hoverZone.addEventListener("mouseleave", hideAll);
+
+      /* Click toggle */
+      const clickZone = document.getElementById("click-zone");
+      const clickMessage = document.getElementById("click-message");
+      let clickOn = false;
+      clickZone.addEventListener("click", () => {
+        if (isFlagActive) return; // Block interaction
+        hideAll();
+        clickOn = !clickOn;
+        clickMessage.style.opacity = clickOn ? 1 : 0;
+      });
+
+      /* Corner hover */
+      const cornerZone = document.getElementById("corner-zone");
+      const cornerMessage = document.getElementById("corner-message");
+      cornerZone.addEventListener("mouseenter", () => {
+        if (isFlagActive) return; // Block interaction
+        hideAll();
+        cornerMessage.style.opacity = 1;
+      });
+      cornerZone.addEventListener("mouseleave", hideAll);
+
+      /* Keyboard (Shift + B) */
+      const keyMessage = document.getElementById("key-message");
+      document.addEventListener("keydown", (e) => {
+        if (isFlagActive) return; // Block interaction
+        if (e.shiftKey && e.key === "A") {
+          hideAll();
+          keyMessage.style.opacity = 1;
+          setTimeout(hideAll, 3000);
+        }
+      });
+
+      /* Double click */
+      const doubleMessage = document.getElementById("double-message");
+      document.addEventListener("dblclick", () => {
+        if (isFlagActive) return; // Block interaction
+        hideAll();
+        doubleMessage.style.opacity = 1;
+        setTimeout(hideAll, 3000);
+      });
+
+      /* Long press (hold mouse) */
+      let holdTimer;
+      const holdMessage = document.getElementById("hold-message");
+      document.addEventListener("mousedown", () => {
+        if (isFlagActive) return; // Block interaction
+        holdTimer = setTimeout(() => {
+          hideAll();
+          holdMessage.style.opacity = 1;
+        }, 1200);
+      });
+      document.addEventListener("mouseup", () => {
+        clearTimeout(holdTimer);
+      });
+
+      /* Idle message */
+      let idleTimer;
+      const idleMessage = document.getElementById("idle-message");
+      function resetIdle() {
+        if (isFlagActive) return; // Do not start idle timer if flag is active
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+          hideAll();
+          idleMessage.style.opacity = 1;
+        }, 8000);
+      }
+      ["mousemove", "keydown", "click"].forEach((e) =>
+        document.addEventListener(e, resetIdle)
+      );
+      resetIdle();
+
+      /* Focus / blur */
+      const focusMessage = document.getElementById("focus-message");
+      window.addEventListener("blur", hideAll);
+      window.addEventListener("focus", () => {
+        if (isFlagActive) return; // Block interaction
+        hideAll();
+        focusMessage.style.opacity = 1;
+        setTimeout(hideAll, 3000);
+      });
+
+      // ============================================
+      // 1. CONSOLE FLAG SYSTEM (THE 4-MINUTE LOGIC)
+      // ============================================
+      const FLAG_KEY = "flag_unlocked";
+      const SECRET_WORD_CONSOLE = "akhsuna";
+
+      console.log(
+        "%cFinally, you're here at the very beginning. Even if it feels like the end, it isn't—this is where something beautiful starts.",
+        "color: pink; font-size: 14px;"
+      );
+      console.log("If you don't know the loveword, keep exploring!");
+
+      Object.defineProperty(window, SECRET_WORD_CONSOLE, {
+        get: function () {
+          localStorage.setItem(FLAG_KEY, "true");
+
+          // 1. LOCK THE SCREEN
+          isFlagActive = true;
+
+          // 2. FORCE HIDE ALL OTHER MESSAGES
+          messages.forEach((m) => (m.style.opacity = 0));
+
+          // 3. SHOW THE SPECIAL MESSAGE
+          const flagMsg = document.getElementById("flag-message");
+          flagMsg.style.opacity = 1;
+
+          // 4. SET TIMER FOR 4 MINUTES (240,000 ms)
+          setTimeout(() => {
+            isFlagActive = false; // Unlock
+            flagMsg.style.opacity = 0; // Fade out gently
+            resetIdle(); // Restart normal behavior
+          }, 240000); // <--- 4 Minutes here
+
+          return "💖This is my last message to you. I hope you'll understand, and I hope you feel the love behind these words. Look at the screen (It will stay for '28'0 seconds).";
+        },
+      });
+
+      // Fallback for Capital A
+      Object.defineProperty(window, "akhsunA", {
+        get: function () {
+          return window[SECRET_WORD_CONSOLE];
+        },
+      });
+
+      if (localStorage.getItem(FLAG_KEY) === "true") {
+        console.log("If you already know the loveword. Please enter it directly and press Enter.");
+      }
+
+      // ============================================
+      // 2. MAGIC WORD RAIN (Visuals)
+      // ============================================
+
+      let keyBuffer = "";
+      const MAGIC_PHRASE = "love";
+
+      document.addEventListener("keyup", (e) => {
+        keyBuffer += e.key.toLowerCase();
+        if (keyBuffer.length > 20) keyBuffer = keyBuffer.slice(-20);
+
+        if (keyBuffer.endsWith(MAGIC_PHRASE)) {
+          createRain();
+          keyBuffer = "";
+        }
+      });
+
+      function createRain() {
+        const emojis = ["❤️", "💖", "🦋", "🌹", "✨", "🥰", "💗", "🦌", "👀"];
+        for (let i = 0; i < 30; i++) {
+          setTimeout(() => {
+            const el = document.createElement("div");
+            el.classList.add("falling-emoji");
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.left = Math.random() * 100 + "vw";
+            el.style.animationDuration = Math.random() * 2 + 2 + "s";
+            el.style.fontSize = Math.random() * 20 + 20 + "px";
+            document.body.appendChild(el);
+            setTimeout(() => {
+              el.remove();
+            }, 5000);
+          }, i * 100);
+        }
+      }
+    </script>
+  </body>
+</html>
