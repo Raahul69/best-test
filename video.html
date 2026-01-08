@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Status 302 : You Found Me</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow-x: hidden;
+        background-color: black;
+        font-family: Arial, sans-serif;
+      }
+
+      /* Container handles the scroll */
+      .video-container {
+        height: 100vh;
+        width: 100%;
+        overflow-y: scroll;
+        scroll-snap-type: y mandatory;
+        scroll-behavior: smooth;
+        scrollbar-width: none; /* Firefox hide */
+        outline: none; /* Remove focus outline */
+      }
+      .video-container::-webkit-scrollbar {
+        display: none; /* Chrome/Safari hide */
+      }
+
+      .video-section {
+        height: 100vh;
+        width: 100%;
+        scroll-snap-align: start;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+
+      video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* --- SPLIT SECTION (SIDE BY SIDE) --- */
+      .split-section {
+        display: flex;
+        flex-direction: row;
+      }
+
+      .split-video-wrapper {
+        width: 50%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        background: black;
+      }
+
+      .split-video-wrapper video {
+        transition: filter 0.3s;
+        filter: brightness(0.5); /* Dimmed initially */
+      }
+
+      /* Active/Hover State */
+      .split-video-wrapper.active video,
+      .split-video-wrapper:hover video {
+        filter: brightness(1);
+      }
+
+      /* --- START OVERLAY --- */
+      #start-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        cursor: pointer;
+        text-align: center;
+      }
+
+      #start-btn {
+        padding: 15px 40px;
+        font-size: 20px;
+        background: white;
+        color: black;
+        border: none;
+        border-radius: 30px;
+        margin-top: 20px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="start-overlay">
+      <h1>Videos those I always wanted to share with you 💗</h1>
+      <p>Click to start watching</p>
+      <button id="start-btn">Start</button>
+    </div>
+
+    <div class="video-container" id="feed" tabindex="0">
+      
+      <div class="video-section">
+        <video src="./assets/radha.mp4" loop playsinline preload="metadata"></video>
+      </div>
+
+      <div class="video-section">
+        <video src="./assets/together.mp4" loop playsinline preload="metadata"></video>
+      </div>
+
+      <div class="video-section">
+        <video src="./assets/words.mp4" loop playsinline preload="metadata"></video>
+      </div>
+
+      <div class="video-section split-section">
+        <div class="split-video-wrapper" id="left-split">
+          <video src="./assets/kalyug.mp4" loop playsinline muted preload="metadata"></video>
+        </div>
+        <div class="split-video-wrapper" id="right-split">
+          <video src="./assets/kavita.mp4" loop playsinline muted preload="metadata"></video>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const overlay = document.getElementById("start-overlay");
+      const feed = document.getElementById("feed");
+      const allSections = document.querySelectorAll(".video-section");
+      let hasInteracted = false;
+      let activeVideo = null; // Track currently playing video for Spacebar pause
+
+      // 1. UNLOCK AUDIO
+      overlay.addEventListener("click", () => {
+        overlay.style.display = "none";
+        hasInteracted = true;
+        feed.focus(); // Focus the feed so keyboard works immediately
+        
+        const firstVideo = allSections[0].querySelector("video");
+        if (firstVideo) {
+          firstVideo.muted = false;
+          firstVideo.play();
+          activeVideo = firstVideo;
+        }
+      });
+
+      // 2. KEYBOARD CONTROLS (NEW FEATURE)
+      document.addEventListener("keydown", (e) => {
+        if (!hasInteracted) return;
+
+        // Calculate current index based on scroll position
+        const sectionHeight = window.innerHeight;
+        const currentScroll = feed.scrollTop;
+        let currentIndex = Math.round(currentScroll / sectionHeight);
+
+        if (e.key === "ArrowDown") {
+          e.preventDefault(); // Stop default scroll behavior
+          let nextIndex = currentIndex + 1;
+          if (nextIndex < allSections.length) {
+            allSections[nextIndex].scrollIntoView({ behavior: "smooth" });
+          }
+        } 
+        else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          let prevIndex = currentIndex - 1;
+          if (prevIndex >= 0) {
+            allSections[prevIndex].scrollIntoView({ behavior: "smooth" });
+          }
+        }
+        else if (e.key === " ") { // Spacebar to Pause/Play
+          e.preventDefault();
+          if (activeVideo) {
+            if (activeVideo.paused) activeVideo.play();
+            else activeVideo.pause();
+          }
+        }
+      });
+
+      // 3. STOP OTHERS
+      function stopAllOthers(currentSection) {
+        allSections.forEach((section) => {
+          if (section !== currentSection) {
+            section.querySelectorAll("video").forEach((v) => {
+              v.pause();
+              v.currentTime = 0;
+              v.muted = true;
+            });
+            section.querySelectorAll(".split-video-wrapper").forEach(w => w.classList.remove("active"));
+          }
+        });
+      }
+
+      // 4. OBSERVER (Scroll Handling)
+      let observer = new IntersectionObserver(
+        (entries) => {
+          if (!hasInteracted) return;
+
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              stopAllOthers(entry.target);
+
+              // Standard Fullscreen
+              if (!entry.target.classList.contains("split-section")) {
+                const video = entry.target.querySelector("video");
+                video.muted = false;
+                video.play();
+                activeVideo = video;
+              } 
+              // Split Section (Wait for input)
+              else {
+                 const splitVideos = entry.target.querySelectorAll("video");
+                 splitVideos.forEach(v => {
+                     v.pause();
+                     v.muted = true;
+                 });
+                 activeVideo = null; // No active video until user picks one
+              }
+            }
+          });
+        },
+        { threshold: 0.6 }
+      );
+
+      allSections.forEach(section => observer.observe(section));
+
+      // 5. EXCLUSIVE SIDE-BY-SIDE PLAYBACK
+      const splitWrappers = document.querySelectorAll(".split-video-wrapper");
+
+      function activateSplitVideo(wrapper) {
+        if(!hasInteracted) return;
+
+        const parent = wrapper.closest(".split-section");
+        const myVideo = wrapper.querySelector("video");
+        
+        // Find sibling
+        const otherWrapper = Array.from(parent.querySelectorAll(".split-video-wrapper"))
+                                  .find(w => w !== wrapper);
+        const otherVideo = otherWrapper ? otherWrapper.querySelector("video") : null;
+
+        // Pause Sibling
+        if (otherVideo) {
+          otherVideo.pause();
+          otherVideo.muted = true;
+          otherWrapper.classList.remove("active");
+        }
+
+        // Play Current
+        wrapper.classList.add("active");
+        myVideo.muted = false;
+        myVideo.play();
+        activeVideo = myVideo; // Update active tracker for spacebar
+      }
+
+      splitWrappers.forEach((wrapper) => {
+        wrapper.addEventListener("mouseenter", () => activateSplitVideo(wrapper));
+        wrapper.addEventListener("click", () => activateSplitVideo(wrapper));
+      });
+    </script>
+  </body>
+</html>
